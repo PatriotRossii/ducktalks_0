@@ -1,3 +1,5 @@
+#pragma once
+
 #include <algorithm>
 #include <initializer_list>
 #include <vector>
@@ -16,7 +18,7 @@ template <typename T, std::size_t CHUNK_SIZE = 8> class deque {
     std::size_t right_chunk;
     std::size_t right_idx;
 
-    bool need_allocation(Direction direction) {
+    auto need_allocation(Direction direction) -> bool {
         return (direction == Direction::LEFT ? left_idx == 0
                                              : right_idx == CHUNK_SIZE - 1);
     }
@@ -28,10 +30,10 @@ template <typename T, std::size_t CHUNK_SIZE = 8> class deque {
         }
     }
 
-    std::size_t get_chunk(std::size_t idx) const {
+    auto get_chunk(std::size_t idx) const -> std::size_t {
         return (left_idx + idx) / CHUNK_SIZE;
     }
-    std::size_t get_idx(std::size_t idx) const {
+    auto get_idx(std::size_t idx) const -> std::size_t {
         return (left_idx + idx) % CHUNK_SIZE;
     }
 
@@ -68,12 +70,12 @@ template <typename T, std::size_t CHUNK_SIZE = 8> class deque {
         size_ += 1;
     }
 
-    const T &operator[](std::size_t idx) const {
+    auto operator[](std::size_t idx) const -> const T & {
         return chunks[get_chunk(idx)][get_idx(idx)];
     }
-    T &operator[](std::size_t idx) {
+    auto operator[](std::size_t idx) -> T & {
         return chunks[get_chunk(idx)][get_idx(idx)];
     }
 
-    std::size_t size() const { return size_; }
+    auto size() const -> std::size_t { return size_; }
 };
