@@ -1,11 +1,11 @@
 #pragma once
 
-#include <array>
+#include <vector>
 #include <initializer_list>
 
 template <typename T, std::size_t N> class chunk {
-    std::array<T, N> data;
-    std::size_t size_;
+    std::vector<T> data;
+    std::size_t size_{0};
 
   public:
     chunk() = default;
@@ -18,8 +18,8 @@ template <typename T, std::size_t N> class chunk {
         size_ = idx;
     }
 
-    auto operator[](std::size_t idx) const -> const T & { return data[idx]; }
-    auto operator[](std::size_t idx) -> T & { return data[idx]; }
+    auto operator[](std::size_t idx) const -> const T & { return data[N - idx - 1]; }
+    auto operator[](std::size_t idx) -> T & { return data[N - idx - 1]; }
 
     auto begin() const -> const T * { return data.begin(); }
     auto end() const -> const T * { return data.end(); }
