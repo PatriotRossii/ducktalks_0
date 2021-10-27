@@ -24,9 +24,9 @@ template <typename T, std::size_t CHUNK_SIZE = 8> class deque {
     }
     void allocate(Direction direction) {
         if (direction == Direction::LEFT) {
-            chunks.insert(chunks.begin(), chunk<T, CHUNK_SIZE>{});
+            chunks.insert(chunks.begin(), chunk<T, CHUNK_SIZE>{ChunkType::reversed});
         } else {
-            chunks.push_back(chunk<T, CHUNK_SIZE>{});
+            chunks.push_back(chunk<T, CHUNK_SIZE>{ChunkType::reversed});
         }
     }
 
