@@ -52,6 +52,7 @@ template <typename T, std::size_t CHUNK_SIZE = 8> class deque {
              from += CHUNK_SIZE, to = std::min(to + CHUNK_SIZE, end), ++count) {
             chunks.emplace_back(from, to);
         }
+
         right_chunk = count - 1;
         right_idx = chunks[right_chunk].size() - 1;
     }

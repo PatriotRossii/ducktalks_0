@@ -9,11 +9,11 @@ template <typename T, std::size_t N> class chunk {
     std::vector<T> data;
 
   public:
-    chunk() = default;
+    chunk() { data.reserve(N); };
     chunk(std::initializer_list<T> list) : data{list} {}
-    template <typename Iterator> chunk(Iterator from, Iterator to) {
-        for (size_t idx = 0; from != to; ++from, ++idx) {
-            data[idx] = *from;
+    template <typename Iterator> chunk(Iterator from, Iterator to) : chunk() {
+        for (; from != to; ++from) {
+            data.push_back(*from);
         }
     }
 
