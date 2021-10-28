@@ -36,8 +36,9 @@ template <typename T, std::size_t CHUNK_SIZE = 8> class deque {
     auto get_chunk(std::size_t idx) const -> std::size_t {
         return (left_idx + idx) / CHUNK_SIZE;
     }
-    auto get_idx(std::size_t idx) const -> std::size_t {
-        return (left_idx + idx) % CHUNK_SIZE;
+    auto get_idx(std::size_t idx, ChunkType type) const -> std::size_t {
+        idx = (left_idx + idx) % CHUNK_SIZE;
+        return (type == ChunkType::reversed ? CHUNK_SIZE - idx - 1 : idx);
     }
 
   public:
@@ -62,7 +63,7 @@ template <typename T, std::size_t CHUNK_SIZE = 8> class deque {
         }
 
         left_idx = (left_idx == 0 ? CHUNK_SIZE - 1 : left_idx - 1);
-        chunks[left_chunk][left_idx] = value;
+        chunks[left_chunk].push_back(value);
         size_ += 1;
     }
     void push_back(const T &value) {
@@ -71,21 +72,21 @@ template <typename T, std::size_t CHUNK_SIZE = 8> class deque {
             right_chunk += 1;
         }
         right_idx = (right_idx == CHUNK_SIZE - 1 ? 0 : right_idx + 1);
-        chunks[right_chunk][right_idx] = value;
+        chunks[right_chunk].push_back(value);
         size_ += 1;
     }
 
     auto operator[](std::size_t idx) const -> const T & {
         std::size_t chunk_idx = get_chunk(idx);
-        return chunks[chunk_idx].get(get_idx(idx), chunk_idx < original_chunk
-                                                       ? ChunkType::reversed
-                                                       : ChunkType::direct);
+        return chunks[chunk_idx][get_idx(idx, chunk_idx < original_chunk
+                                                  ? ChunkType::reversed
+                                                  : ChunkType::direct)];
     }
     auto operator[](std::size_t idx) -> T & {
         std::size_t chunk_idx = get_chunk(idx);
-        return chunks[chunk_idx].get(get_idx(idx), chunk_idx < original_chunk
-                                                       ? ChunkType::reversed
-                                                       : ChunkType::direct);
+        return chunks[chunk_idx][get_idx(idx, chunk_idx < original_chunk
+                                                  ? ChunkType::reversed
+                                                  : ChunkType::direct)];
     }
 
     auto size() const -> std::size_t { return size_; }

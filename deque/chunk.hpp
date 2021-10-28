@@ -17,13 +17,8 @@ template <typename T, std::size_t N> class chunk {
         }
     }
 
-    auto get(std::size_t idx, ChunkType type = ChunkType::direct) const
-        -> const T & {
-        return (type == ChunkType::reversed ? data[N - idx - 1] : data[idx]);
-    }
-    auto get(std::size_t idx, ChunkType type = ChunkType::direct) -> T & {
-        return (type == ChunkType::reversed ? data[N - idx - 1] : data[idx]);
-    }
+    auto operator[](std::size_t idx) const -> const T & { return data[idx]; }
+    auto operator[](std::size_t idx) -> T & { return data[idx]; }
 
     auto begin(ChunkType type = ChunkType::direct) const -> const T * {
         return (type == ChunkType::reversed ? data.rbegin() : data.begin());
