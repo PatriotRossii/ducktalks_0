@@ -15,6 +15,8 @@ template <typename T, std::size_t CHUNK_SIZE = 8> class deque {
     std::size_t left_chunk{0};
     std::size_t left_idx{0};
 
+    std::size_t original_chunk{0};
+
     std::size_t right_chunk;
     std::size_t right_idx;
 
@@ -56,7 +58,9 @@ template <typename T, std::size_t CHUNK_SIZE = 8> class deque {
         if (need_allocation(Direction::LEFT)) {
             allocate(Direction::LEFT);
             right_chunk += 1;
+            original_chunk += 1;
         }
+
         left_idx = (left_idx == 0 ? CHUNK_SIZE - 1 : left_idx - 1);
         chunks[left_chunk][left_idx] = value;
         size_ += 1;
@@ -72,10 +76,16 @@ template <typename T, std::size_t CHUNK_SIZE = 8> class deque {
     }
 
     auto operator[](std::size_t idx) const -> const T & {
-        return chunks[get_chunk(idx)][get_idx(idx)];
+        std::size_t chunk_idx = get_chunk(idx);
+        return chunks[chunk_idx].get(get_idx(idx), chunk_idx < original_chunk
+                                                       ? ChunkType::reversed
+                                                       : ChunkType::direct);
     }
     auto operator[](std::size_t idx) -> T & {
-        return chunks[get_chunk(idx)][get_idx(idx)];
+        std::size_t chunk_idx = get_chunk(idx);
+        return chunks[chunk_idx].get(get_idx(idx), chunk_idx < original_chunk
+                                                       ? ChunkType::reversed
+                                                       : ChunkType::direct);
     }
 
     auto size() const -> std::size_t { return size_; }
