@@ -1,8 +1,8 @@
 #pragma once
 
+#include <algorithm>
 #include <initializer_list>
 #include <vector>
-#include <algorithm>
 
 enum ChunkType { reversed, direct };
 
@@ -13,13 +13,10 @@ template <typename T, std::size_t N> class chunk {
     chunk() { data.reserve(N); };
     chunk(std::initializer_list<T> list) : data{list} {}
     template <typename Iterator> chunk(Iterator from, Iterator to) : chunk() {
-        for(auto it = data.begin(); it != data.end(); ++it) std::cout << *it << ' ';
         std::copy(from, to, std::back_inserter(data));
     }
 
-    void add(const T& element) {
-        data.push_back(element);
-    }
+    void add(const T &element) { data.push_back(element); }
 
     auto operator[](std::size_t idx) const -> const T & { return data[idx]; }
     auto operator[](std::size_t idx) -> T & { return data[idx]; }
