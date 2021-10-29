@@ -13,26 +13,23 @@ template <class T> class deque {
 
     enum class Direction { LEFT, RIGHT };
 
-    std::vector<chunk<T, CHUNK_SIZE>> chunks;
+    std::vector<std::vector<T>> chunks;
     std::size_t size_;
 
-    std::size_t left_chunk{0};
-    std::size_t left_idx{0};
-
+    std::size_t left_chunk{0}, left_idx{0};
     std::size_t original_chunk{0};
-
-    std::size_t right_chunk;
-    std::size_t right_idx;
+    std::size_t right_chunk, right_idx;
 
     auto need_allocation(Direction direction) -> bool {
         return (direction == Direction::LEFT ? left_idx == 0
                                              : right_idx == CHUNK_SIZE - 1);
     }
     void allocate(Direction direction) {
+        std::vector<T> new_chunk; new_chunk.reserve(CHUNK_SIZE);
         if (direction == Direction::LEFT) {
-            chunks.insert(chunks.begin(), chunk<T, CHUNK_SIZE>{});
+            chunks.insert(chunks.begin(), std::move(new_chunk));
         } else {
-            chunks.push_back(chunk<T, CHUNK_SIZE>{});
+            chunks.push_back(std::move(new_chunk));
         }
     }
     auto get_chunk(std::size_t idx) const -> std::size_t {
@@ -42,14 +39,15 @@ template <class T> class deque {
         idx = (left_idx + idx) % CHUNK_SIZE;
         return (type == ChunkType::reversed ? CHUNK_SIZE - idx - 1 : idx);
     }
+
   public:
     deque() = default;
-    deque(std::initializer_list<T> list): size_{list.size()} {
+    deque(std::initializer_list<T> list) : size_{list.size()} {
         auto end = list.end();
         chunks.reserve(size_ / CHUNK_SIZE + 1);
 
         std::size_t count = 0;
-        for (auto from = init.begin(), to = std::min(from + CHUNK_SIZE, end);
+        for (auto from = list.begin(), to = std::min(from + CHUNK_SIZE, end);
              from < end;
              from += CHUNK_SIZE, to = std::min(to + CHUNK_SIZE, end), ++count) {
             chunks.emplace_back(from, to);
@@ -58,6 +56,7 @@ template <class T> class deque {
         right_chunk = count - 1;
         right_idx = chunks[right_chunk].size() - 1;
     }
+
     void push_front(const T &value) {
         if (need_allocation(Direction::LEFT)) {
             allocate(Direction::LEFT);
@@ -66,18 +65,30 @@ template <class T> class deque {
         }
 
         left_idx = (left_idx == 0 ? CHUNK_SIZE - 1 : left_idx - 1);
-        chunks[left_chunk].add(value);
+        chunks[left_chunk].push_back(value);
         size_ += 1;
     }
+    void pop_front() { chunks[left_chunk].pop_back(); }
+
     void push_back(const T &value) {
         if (need_allocation(Direction::RIGHT)) {
             allocate(Direction::RIGHT);
             right_chunk += 1;
         }
         right_idx = (right_idx == CHUNK_SIZE - 1 ? 0 : right_idx + 1);
-        chunks[right_chunk].add(value);
+        chunks[right_chunk].push_back(value);
         size_ += 1;
     }
+    void pop_back() { chunks[right_chunk].pop_back(); }
+
+    void erase(std::size_t pos) {
+        std::size_t chunk_idx = get_chunk(pos);
+        chunks[chunk_idx].erase(chunks[chunk_idx].begin() + get_idx(pos, chunk_idx < original_chunk ? ChunkType::reversed : ChunkType::direct));
+    }
+    void erase(std::size_t from, std::size_t to) {
+
+    }
+
     auto operator[](std::size_t idx) const -> const T & {
         std::size_t chunk_idx = get_chunk(idx);
         return chunks[chunk_idx][get_idx(idx, chunk_idx < original_chunk
@@ -92,4 +103,5 @@ template <class T> class deque {
     }
 
     auto size() const -> std::size_t { return size_; }
+    void clear() { chunks.clear(); }
 };
