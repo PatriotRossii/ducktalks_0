@@ -41,4 +41,12 @@ int main() {
 
 		dump(myDeque);
 	}
+	{
+		deque<int> myDeque{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+		myDeque.push_front(0);
+
+		myDeque.erase(5);
+
+		dump(myDeque);
+	}
 }
