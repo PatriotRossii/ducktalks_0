@@ -2,11 +2,14 @@
 
 #include <algorithm>
 #include <initializer_list>
+#include <memory>
 #include <vector>
 
 #include "chunk.hpp"
 
-template <typename T, std::size_t CHUNK_SIZE = 8> class deque {
+template <class T, class Allocator = std::allocator<T>> class deque {
+    static constexpr std::size_t CHUNK_SIZE = 8;
+
     enum class Direction { LEFT, RIGHT };
 
     std::vector<chunk<T, CHUNK_SIZE>> chunks;
@@ -41,6 +44,21 @@ template <typename T, std::size_t CHUNK_SIZE = 8> class deque {
     }
 
   public:
+    using value_type = T;
+    using allocator_type = Allocator;
+
+    using size_type = std::size_t;
+    using difference_type = std::ptrdiff_t;
+
+    using reference = value_type &;
+    using const_reference = const value_type &;
+
+    using pointer = typename std::allocator_traits<Allocator>::pointer;
+    using const_pointer =
+        typename std::allocator_traits<Allocator>::const_pointer;
+
+    deque() = default;
+    explicit deque(const Allocator &alloc) {}
     deque(std::initializer_list<T> list) : size_{list.size()} {
         auto end = list.end();
         chunks.reserve(list.size() / CHUNK_SIZE + 1);
