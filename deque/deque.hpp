@@ -59,26 +59,31 @@ template <class T, class Allocator = std::allocator<T>> class deque {
     using const_pointer =
         typename std::allocator_traits<Allocator>::const_pointer;
 
-    deque(): chunks(Allocator()) { };
-    explicit deque(const Allocator &alloc): chunks(alloc) {}
+    deque() : chunks(Allocator()){};
+    explicit deque(const Allocator &alloc) : chunks(alloc) {}
     explicit deque(size_type count, const T &value = T(),
-                   const Allocator &alloc = Allocator()): chunks(alloc) {
-        for(std::size_t i = 0; i != count / CHUNK_SIZE; ++i) {
+                   const Allocator &alloc = Allocator())
+        : chunks(alloc) {
+        for (std::size_t i = 0; i != count / CHUNK_SIZE; ++i) {
             chunks.emplace_back(count, value);
         }
-        if(count % CHUNK_SIZE) chunks.emplace_back(count % CHUNK_SIZE, value);
+        if (count % CHUNK_SIZE)
+            chunks.emplace_back(count % CHUNK_SIZE, value);
     }
-    explicit deque(size_type count): chunks(Allocator()) {
-        for(std::size_t i = 0; i != count / CHUNK_SIZE; ++i) {
+    explicit deque(size_type count) : chunks(Allocator()) {
+        for (std::size_t i = 0; i != count / CHUNK_SIZE; ++i) {
             chunks.emplace_back(count, T());
         }
-        if(count % CHUNK_SIZE) chunks.emplace_back(count % CHUNK_SIZE, T());
+        if (count % CHUNK_SIZE)
+            chunks.emplace_back(count % CHUNK_SIZE, T());
     }
-    explicit deque(size_t count, const Allocator &alloc = Allocator()): chunks(alloc) {
-        for(std::size_t i = 0; i != count / CHUNK_SIZE; ++i) {
+    explicit deque(size_t count, const Allocator &alloc = Allocator())
+        : chunks(alloc) {
+        for (std::size_t i = 0; i != count / CHUNK_SIZE; ++i) {
             chunks.emplace_back(count, T());
         }
-        if(count % CHUNK_SIZE) chunks.emplace_back(count % CHUNK_SIZE, T());
+        if (count % CHUNK_SIZE)
+            chunks.emplace_back(count % CHUNK_SIZE, T());
     }
     template <class InputIt>
     deque(InputIt first, InputIt last,
@@ -86,14 +91,15 @@ template <class T, class Allocator = std::allocator<T>> class deque {
               Allocator()) requires(std::same_as<std::input_iterator_tag,
                                                  typename std::iterator_traits<
                                                      InputIt>::
-                                                     iterator_category()>): chunks(alloc) {
+                                                     iterator_category()>)
+        : chunks(alloc) {
         std::ptrdiff_t length = last - first;
         chunks.reserve(length / CHUNK_SIZE + 1);
 
         std::size_t count = 0;
         for (auto to = std::min(first + CHUNK_SIZE, last); first < to;
              first += CHUNK_SIZE, to = std::min(to + CHUNK_SIZE, last),
-            ++count) {
+                  ++count) {
             chunks.emplace_back(first, to);
         }
     }
@@ -134,6 +140,8 @@ template <class T, class Allocator = std::allocator<T>> class deque {
         right_chunk = count - 1;
         right_idx = chunks[right_chunk].size() - 1;
     }
+    ~deque() = default;
+
     auto get_allocator() const noexcept -> allocator_type {
         return Allocator();
     }
