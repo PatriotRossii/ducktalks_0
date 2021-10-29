@@ -11,6 +11,7 @@ template <typename T, std::size_t N> class chunk {
 
   public:
     chunk() { data.reserve(N); };
+    chunk(std::size_t count, const T &value = T()): data(count, value) { }
     chunk(std::initializer_list<T> list) : data{list} {}
     template <typename Iterator> chunk(Iterator from, Iterator to) : chunk() {
         std::copy(from, to, std::back_inserter(data));

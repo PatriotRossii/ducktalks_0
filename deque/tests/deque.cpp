@@ -2,8 +2,8 @@
 
 #include "../deque.hpp"
 
-template<typename T, std::size_t N>
-void dump(deque<T, N>& object) {
+template<typename T>
+void dump(deque<T>& object) {
 	std::cout << '{';
 	for(std::size_t i = 0, size = object.size(); i != size; ++i) {
 		std::cout << object[i];
@@ -14,15 +14,15 @@ void dump(deque<T, N>& object) {
 
 int main() {
 	{
-		deque<int, 8> myDeque{1, 2, 3, 4, 5};
+		deque<int> myDeque{1, 2, 3, 4, 5};
 		dump(myDeque);
 	}
 	{
-		deque<int, 8> myDeque{1, 2, 3, 4, 5, 6, 7, 8};
+		deque<int> myDeque{1, 2, 3, 4, 5, 6, 7, 8};
 		dump(myDeque);
 	}
 	{
-		deque<int, 8> myDeque{1, 2, 3, 4, 5, 6, 7, 8};
+		deque<int> myDeque{1, 2, 3, 4, 5, 6, 7, 8};
 		
 		myDeque.push_back(9);
 		myDeque.push_back(10);
@@ -31,7 +31,7 @@ int main() {
 		dump(myDeque);
 	}
 	{
-		deque<int, 4> myDeque{2, 3};
+		deque<int> myDeque{2, 3};
 
 		myDeque.push_front(1);
 		myDeque.push_front(0);

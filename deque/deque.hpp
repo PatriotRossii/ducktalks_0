@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <initializer_list>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "chunk.hpp"
@@ -12,7 +13,8 @@ template <class T, class Allocator = std::allocator<T>> class deque {
 
     enum class Direction { LEFT, RIGHT };
 
-    std::vector<chunk<T, CHUNK_SIZE>> chunks;
+    std::vector<chunk<T, CHUNK_SIZE>, std::allocator<chunk<T, CHUNK_SIZE>>>
+        chunks;
     std::size_t size_;
 
     std::size_t left_chunk{0};
@@ -57,14 +59,73 @@ template <class T, class Allocator = std::allocator<T>> class deque {
     using const_pointer =
         typename std::allocator_traits<Allocator>::const_pointer;
 
-    deque() = default;
-    explicit deque(const Allocator &alloc) {}
-    deque(std::initializer_list<T> list) : size_{list.size()} {
-        auto end = list.end();
-        chunks.reserve(list.size() / CHUNK_SIZE + 1);
+    deque(): chunks(Allocator()) { };
+    explicit deque(const Allocator &alloc): chunks(alloc) {}
+    explicit deque(size_type count, const T &value = T(),
+                   const Allocator &alloc = Allocator()): chunks(alloc) {
+        for(std::size_t i = 0; i != count / CHUNK_SIZE; ++i) {
+            chunks.emplace_back(count, value);
+        }
+        if(count % CHUNK_SIZE) chunks.emplace_back(count % CHUNK_SIZE, value);
+    }
+    explicit deque(size_type count): chunks(Allocator()) {
+        for(std::size_t i = 0; i != count / CHUNK_SIZE; ++i) {
+            chunks.emplace_back(count, T());
+        }
+        if(count % CHUNK_SIZE) chunks.emplace_back(count % CHUNK_SIZE, T());
+    }
+    explicit deque(size_t count, const Allocator &alloc = Allocator()): chunks(alloc) {
+        for(std::size_t i = 0; i != count / CHUNK_SIZE; ++i) {
+            chunks.emplace_back(count, T());
+        }
+        if(count % CHUNK_SIZE) chunks.emplace_back(count % CHUNK_SIZE, T());
+    }
+    template <class InputIt>
+    deque(InputIt first, InputIt last,
+          const Allocator &alloc =
+              Allocator()) requires(std::same_as<std::input_iterator_tag,
+                                                 typename std::iterator_traits<
+                                                     InputIt>::
+                                                     iterator_category()>): chunks(alloc) {
+        std::ptrdiff_t length = last - first;
+        chunks.reserve(length / CHUNK_SIZE + 1);
 
         std::size_t count = 0;
-        for (auto from = list.begin(), to = std::min(from + CHUNK_SIZE, end);
+        for (auto to = std::min(first + CHUNK_SIZE, last); first < to;
+             first += CHUNK_SIZE, to = std::min(to + CHUNK_SIZE, last),
+            ++count) {
+            chunks.emplace_back(first, to);
+        }
+    }
+    deque(const deque &other)
+        : chunks(other.chunks, std::allocator_traits<allocator_type>::
+                                   select_on_container_copy_construction(
+                                       other.get_allocator())),
+          size_(other.size_), left_chunk(other.left_chunk),
+          left_idx(other.left_idx), original_chunk(other.original_chunk),
+          right_chunk(other.right_chunk), right_idx(other.right_idx) {}
+    deque(const deque &other, const Allocator &alloc)
+        : chunks(other.chunks, alloc), size_(other.size_),
+          left_chunk(other.left_chunk), left_idx(other.left_idx),
+          original_chunk(other.original_chunk), right_chunk(other.right_chunk),
+          right_idx(other.right_idx) {}
+    deque(deque &&other)
+        : chunks(std::move(other.chunks), other.get_allocator()),
+          size_(other.size_), left_chunk(other.left_chunk),
+          left_idx(other.left_idx), original_chunk(other.original_chunk),
+          right_chunk(other.right_chunk), right_idx(other.right_idx) {}
+    deque(deque &&other, const Allocator &alloc)
+        : chunks(std::move(other.chunks), alloc), size_(other.size_),
+          left_chunk(other.left_chunk), left_idx(other.left_idx),
+          original_chunk(other.original_chunk), right_chunk(other.right_chunk),
+          right_idx(other.right_idx) {}
+    deque(std::initializer_list<T> init, const Allocator &alloc = Allocator())
+        : chunks{alloc}, size_{init.size()} {
+        auto end = init.end();
+        chunks.reserve(init.size() / CHUNK_SIZE + 1);
+
+        std::size_t count = 0;
+        for (auto from = init.begin(), to = std::min(from + CHUNK_SIZE, end);
              from < end;
              from += CHUNK_SIZE, to = std::min(to + CHUNK_SIZE, end), ++count) {
             chunks.emplace_back(from, to);
@@ -72,6 +133,9 @@ template <class T, class Allocator = std::allocator<T>> class deque {
 
         right_chunk = count - 1;
         right_idx = chunks[right_chunk].size() - 1;
+    }
+    auto get_allocator() const noexcept -> allocator_type {
+        return Allocator();
     }
     void push_front(const T &value) {
         if (need_allocation(Direction::LEFT)) {
