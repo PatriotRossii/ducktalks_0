@@ -128,8 +128,8 @@ template <class T> class deque {
         if (need_allocation(Direction::RIGHT)) {
             allocate(Direction::RIGHT);
         }
-        right_idx = (right_idx == CHUNK_SIZE - 1 ? 0 : right_idx + 1);
         chunks.back().push_back(value);
+        right_idx = chunks.back().size() - 1;
         size_ += 1;
     }
     void pop_back() {
@@ -143,7 +143,7 @@ template <class T> class deque {
         size_ -= 1;
     }
     void erase(std::size_t from, std::size_t to) {
-        for (; from != to; ++from) {
+        for (std::size_t counter = from; counter != to; ++counter) {
             erase(from);
         }
     }
