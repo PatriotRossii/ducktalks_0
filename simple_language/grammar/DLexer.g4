@@ -15,6 +15,20 @@ LeftParen: '(';
 
 RightParen: ')';
 
+Begin: 'begin';
+
+End: 'end';
+
+Comma: ',';
+
+Plus: '+';
+
+Minus: '-';
+
+Slash: '/';
+
+Star: '*';
+
 Return: 'return';
 
 Identifier:
