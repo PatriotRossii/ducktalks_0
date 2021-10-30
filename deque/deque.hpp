@@ -13,13 +13,16 @@ template <class T> class deque {
     std::size_t size_{0};
 
     std::size_t left_idx{0}; // Индекс крайнего левого элемента
-    std::size_t original_chunk{0}; // Индекс первого чанка
+    std::size_t start_chunk{0}; // Индекс первого чанка
 
     auto need_allocation(Direction direction) -> bool {
         // Если мы хотим вставить элемент в начало, то создание нового чанка
         // необходимо тогда когда индекс крайнего левого элемента равен нулю
-        // Если в конец - тогда, когда размер крайнего правого чанка равен CHUNK_SIZE
-        return (direction == Direction::LEFT ? left_idx == 0 : chunks.back().size() == CHUNK_SIZE)
+        // Если в конец - тогда, когда размер крайнего правого чанка равен
+        // CHUNK_SIZE
+        return (direction == Direction::LEFT
+                    ? left_idx == 0
+                    : chunks.back().size() == CHUNK_SIZE)
     }
     void allocate(Direction direction) {
         std::vector<T> new_chunk;
@@ -60,7 +63,7 @@ template <class T> class deque {
         // Внутреннее представление:
         //            { {1, 0} {2, 3, 4, 5} {6, 7} }
 
-        // left_idx: 2, original_chunk = 1, CHUNK_SIZE = 4
+        // left_idx: 2, start_chunk = 1, CHUNK_SIZE = 4
 
         // get_idx(0) = get_idx(0, true)
         //      idx = (2 + 0) % 4 = 2 % 4 = 2
@@ -70,7 +73,7 @@ template <class T> class deque {
         //      idx = (2 + 3) % 4 = 5 % 4 = 1
         //      return 1
 
-        return get_idx(idx, get_chunk(idx) < original_chunk);
+        return get_idx(idx, get_chunk(idx) < start_chunk);
     }
 
   public:
@@ -108,7 +111,7 @@ template <class T> class deque {
     void push_front(const T &value) {
         if (need_allocation(Direction::LEFT)) {
             allocate(Direction::LEFT);
-            original_chunk += 1;
+            start_chunk += 1;
         }
         left_idx = (left_idx == 0 ? CHUNK_SIZE - 1 : left_idx - 1);
         chunks.front().push_back(value);
