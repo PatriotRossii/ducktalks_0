@@ -161,6 +161,9 @@ template <class T> class deque {
     auto size() const -> std::size_t { return size_; }
     void clear() {
         chunks.clear();
+
         size_ = 0;
+        left_idx = 0;
+        start_chunk = 0;
     }
 };
