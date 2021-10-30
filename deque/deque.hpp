@@ -1,12 +1,7 @@
 #pragma once
 
-#include <algorithm>
 #include <initializer_list>
-#include <memory>
-#include <utility>
 #include <vector>
-
-#include "chunk.hpp"
 
 template <class T> class deque {
     static constexpr std::size_t CHUNK_SIZE = 8;
@@ -35,11 +30,14 @@ template <class T> class deque {
     auto get_chunk(std::size_t idx) const -> std::size_t {
         return (left_idx + idx) / CHUNK_SIZE;
     }
-    auto get_idx(std::size_t idx, ChunkType type) const -> std::size_t {
-        idx = (left_idx + idx) % CHUNK_SIZE;
-        return (type == ChunkType::reversed ? CHUNK_SIZE - idx - 1 : idx);
-    }
 
+    auto get_idx(std::size_t idx, bool reverse) const -> std::size_t {
+        idx = (left_idx + idx) % CHUNK_SIZE;
+        return (reverse ? CHUNK_SIZE - idx - 1 : idx);
+    }
+    auto get_idx(std::size_t idx) -> std::size_t {
+        return get_idx(idx, get_chunk(idx) < original_chunk ? true : false);
+     }
   public:
     deque() = default;
     deque(std::initializer_list<T> list) : size_{list.size()} {
@@ -63,7 +61,6 @@ template <class T> class deque {
             right_chunk += 1;
             original_chunk += 1;
         }
-
         left_idx = (left_idx == 0 ? CHUNK_SIZE - 1 : left_idx - 1);
         chunks[left_chunk].push_back(value);
         size_ += 1;
@@ -82,24 +79,20 @@ template <class T> class deque {
     void pop_back() { chunks[right_chunk].pop_back(); }
 
     void erase(std::size_t pos) {
-        std::size_t chunk_idx = get_chunk(pos);
-        chunks[chunk_idx].erase(chunks[chunk_idx].begin() + get_idx(pos, chunk_idx < original_chunk ? ChunkType::reversed : ChunkType::direct));
+        std::vector<T>& chunk = chunks[get_chunk(pos)];
+        chunk.erase(chunk.begin() + get_idx(pos));
     }
     void erase(std::size_t from, std::size_t to) {
-
+        for(; from != to; ++from) {
+            erase(from);
+        }
     }
 
     auto operator[](std::size_t idx) const -> const T & {
-        std::size_t chunk_idx = get_chunk(idx);
-        return chunks[chunk_idx][get_idx(idx, chunk_idx < original_chunk
-                                                  ? ChunkType::reversed
-                                                  : ChunkType::direct)];
+        return chunks[get_chunk(idx)][get_idx(idx)];
     }
     auto operator[](std::size_t idx) -> T & {
-        std::size_t chunk_idx = get_chunk(idx);
-        return chunks[chunk_idx][get_idx(idx, chunk_idx < original_chunk
-                                                  ? ChunkType::reversed
-                                                  : ChunkType::direct)];
+        return chunks[get_chunk(idx)][get_idx(idx)];
     }
 
     auto size() const -> std::size_t { return size_; }
