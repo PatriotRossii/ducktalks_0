@@ -40,3 +40,4 @@ declaration:
 
 declarationseq:
 	declaration+
+	;
