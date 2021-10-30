@@ -155,6 +155,12 @@ template <class T> class deque {
         return chunks[get_chunk(idx)][get_idx(idx)];
     }
 
+    auto back() const -> const T & { return chunks.back().back(); }
+    auto back() -> T & { return chunks.back().back(); }
+
+    auto front() const -> const T & { return chunks.front().back(); }
+    auto front() -> T & { return chunks.front().back(); }
+
     auto size() const -> std::size_t { return size_; }
     void clear() {
         chunks.clear();
