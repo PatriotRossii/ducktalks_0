@@ -1,13 +1,26 @@
 lexer grammar DLexer;
 
 NumberLiteral:
-	DecimalInteger
+	DecimalLiteral
 	| FloatingLiteral
 	;
 
 DecimalLiteral:
 	NONZERODIGIT DIGIT*
 	;
+
+FloatingLiteral:
+	Fractionalconstant Exponentpart?
+	| Digitsequence Exponentpart
+	;
+
+fragment Fractionalconstant:
+	Digitsequence? '.' Digitsequence
+	| Digitsequence '.'
+	;
+
+fragment Exponentpart:
+	('e' | 'E') SIGN? Digitsequence;
 
 Def: 'def';
 
@@ -35,8 +48,13 @@ Identifier:
 	NONDIGIT (NONDIGIT | DIGIT)*
 	;
 
+fragment Digitsequence: DIGIT DIGIT*;
+
 fragment NONDIGIT:
 	[a-zA-Z_];
+
+fragment SIGN:
+	[+-];
 
 fragment DIGIT:
 	[0-9];
