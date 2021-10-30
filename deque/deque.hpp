@@ -22,7 +22,7 @@ template <class T> class deque {
         // CHUNK_SIZE
         return (direction == Direction::LEFT
                     ? left_idx == 0
-                    : chunks.back().size() == CHUNK_SIZE)
+                    : chunks.back().size() == CHUNK_SIZE);
     }
     void allocate(Direction direction) {
         std::vector<T> new_chunk;
