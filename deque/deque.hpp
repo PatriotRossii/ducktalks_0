@@ -2,7 +2,6 @@
 
 #include <initializer_list>
 #include <vector>
-#include <iostream>
 
 template <class T> class deque {
     static constexpr std::size_t CHUNK_SIZE = 8; // Максимальный размер чанка
