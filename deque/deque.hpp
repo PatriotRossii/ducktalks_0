@@ -2,6 +2,7 @@
 
 #include <initializer_list>
 #include <vector>
+#include <iostream>
 
 template <class T> class deque {
     static constexpr std::size_t CHUNK_SIZE = 8; // Максимальный размер чанка
@@ -77,7 +78,9 @@ template <class T> class deque {
     }
 
   public:
-    deque() = default;
+    deque() {
+        allocate(Direction::RIGHT);
+    }
     deque(std::initializer_list<T> list) : size_{list.size()} {
         // Пример:
 
@@ -132,17 +135,6 @@ template <class T> class deque {
     void pop_back() {
         chunks.back().pop_back();
         size_ -= 1;
-    }
-
-    void erase(std::size_t pos) {
-        std::vector<T> &chunk = chunks[get_chunk(pos)];
-        chunk.erase(chunk.begin() + get_idx(pos));
-        size_ -= 1;
-    }
-    void erase(std::size_t from, std::size_t to) {
-        for (std::size_t counter = from; counter != to; ++counter) {
-            erase(from);
-        }
     }
 
     auto operator[](std::size_t idx) const -> const T & {
